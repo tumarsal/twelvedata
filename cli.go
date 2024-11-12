@@ -26,6 +26,42 @@ func NewCli(cfg *Conf, httpCli *HTTPCli, logger *zerolog.Logger) *Cli {
 	return &Cli{cfg: cfg, httpCli: httpCli, logger: logger}
 }
 
+func (c *Cli) GetCryptoCurrencies(symbol, exchange, currencyBase, currencyQuote, format, delimiter string) (
+	cryptoResp *response.CryptoCurrencies,
+	creditsLeft int64,
+	creditsUsed int64,
+	err error,
+) {
+	resp := fasthttp.AcquireResponse()
+	defer fasthttp.ReleaseResponse(resp)
+
+	uri := strings.Replace(c.cfg.BaseURL+c.cfg.ReferenceData.CryptocurrenciesURL, "{apikey}", c.cfg.APIKey, 1)
+	uri = strings.Replace(uri, "{symbol}", url.QueryEscape(symbol), 1)
+	uri = strings.Replace(uri, "{exchange}", url.QueryEscape(exchange), 1)
+	uri = strings.Replace(uri, "{currency_base}", url.QueryEscape(currencyBase), 1)
+	uri = strings.Replace(uri, "{currency_quote}", url.QueryEscape(currencyQuote), 1)
+	uri = strings.Replace(uri, "{format}", url.QueryEscape(format), 1)
+	uri = strings.Replace(uri, "{delimiter}", url.QueryEscape(delimiter), 1)
+
+	if creditsLeft, creditsUsed, err = c.httpCli.makeRequest(uri, resp); err != nil {
+		return nil, 0, 0, err
+	}
+
+	if _, err = c.CheckErrorInResponse(resp); err != nil {
+		if !errors.Is(err, dictionary.ErrTooManyRequests) && !errors.Is(err, dictionary.ErrNotFound) {
+			c.logger.Err(err).Msg("check error in response")
+		}
+		return nil, creditsLeft, creditsUsed, err
+	}
+
+	if err := json.Unmarshal(resp.Body(), &cryptoResp); err != nil {
+		c.logger.Err(err).Bytes("body", resp.Body()).Msg("unmarshall")
+		return nil, creditsLeft, creditsUsed, fmt.Errorf("unmarshall json: %w", err)
+	}
+
+	return cryptoResp, creditsLeft, creditsUsed, nil
+}
+
 func (c *Cli) GetStocks(symbol, exchange, micCode, country, instrumentType string, showPlan, includeDelisted bool) (
 	stocksResp *response.Stocks,
 	creditsLeft int64,
@@ -394,6 +430,25 @@ func (c *Cli) GetEtfs(symbol, exchange, micCode, country string, showPlan, inclu
 	}
 
 	return etfsResp, creditsLeft, creditsUsed, nil
+}
+func removeEmptyQueryParams(rawURL string) (string, error) {
+	parsedURL, err := url.Parse(rawURL)
+	if err != nil {
+		return "", err
+	}
+
+	originalQuery := parsedURL.RawQuery
+	queryParams := url.Values{}
+
+	for _, param := range strings.Split(originalQuery, "&") {
+		keyValue := strings.SplitN(param, "=", 2)
+		if len(keyValue) == 2 && keyValue[1] != "" {
+			queryParams.Add(keyValue[0], keyValue[1])
+		}
+	}
+
+	parsedURL.RawQuery = queryParams.Encode()
+	return parsedURL.String(), nil
 }
 
 func (c *Cli) GetQuote(

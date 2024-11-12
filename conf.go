@@ -16,11 +16,12 @@ type Conf struct {
 
 // nolint: lll
 type ReferenceData struct {
-	StocksURL      string `default:"/stocks?apikey={apikey}&symbol={symbol}&exchange={exchange}&mic_code={mic_code}&country={country}&type={type}&show_plan={show_plan}&include_delisted={include_delisted}" json:"stocks_url"`
-	ExchangesURL   string `default:"/exchanges?apikey={apikey}&type={type}&name={name}&code={code}&country={country}&show_plan={show_plan}"                                                                  json:"exchange_url"`
-	IndicesURL     string `default:"/indices?apikey={apikey}&symbol={symbol}&country={country}&show_plan={show_plan}&include_delisted={include_delisted}"                                                    json:"indices_url"`
-	EtfsURL        string `default:"/etf?apikey={apikey}&symbol={symbol}&exchange={exchange}&mic_code={mic_code}&country={country}&show_plan={show_plan}&include_delisted={include_delisted}"                json:"etfs_url"`
-	MarketStateURL string `default:"/market_state?apikey={apikey}&exchange={exchange}&code={code}&country={country}"                                                                                         json:"market_state_url"`
+	StocksURL           string `default:"/stocks?apikey={apikey}&symbol={symbol}&exchange={exchange}&mic_code={mic_code}&country={country}&type={type}&show_plan={show_plan}&include_delisted={include_delisted}" json:"stocks_url"`
+	ExchangesURL        string `default:"/exchanges?apikey={apikey}&type={type}&name={name}&code={code}&country={country}&show_plan={show_plan}"                                                                  json:"exchange_url"`
+	IndicesURL          string `default:"/indices?apikey={apikey}&symbol={symbol}&country={country}&show_plan={show_plan}&include_delisted={include_delisted}"                                                    json:"indices_url"`
+	EtfsURL             string `default:"/etf?apikey={apikey}&symbol={symbol}&exchange={exchange}&mic_code={mic_code}&country={country}&show_plan={show_plan}&include_delisted={include_delisted}"                json:"etfs_url"`
+	MarketStateURL      string `default:"/market_state?apikey={apikey}&exchange={exchange}&code={code}&country={country}"                                                                                         json:"market_state_url"`
+	CryptocurrenciesURL string `default:"/cryptocurrencies?apikey={apikey}&symbol={symbol}&exchange={exchange}&currency_base={currency_base}&currency_quote={currency_quote}&format={format}&delimiter={delimiter}" json:"cryptocurrencies_url"`
 }
 
 // nolint: lll
